@@ -53,22 +53,9 @@ function colorOnMouseover() {
 function removeMouseoverEvents() {
     // remove current mouseover
     Array.from(document.body.querySelector("div#wrapper").childNodes)
-    .forEach((g) => g.removeEventListener("mouseover", changeColor));
-    Array.from(document.body.querySelector("div#wrapper").childNodes)
-    .forEach((g) => g.removeEventListener("mouseover", randomColor));
+    .forEach((g) => g.removeEventListener("mouseover", changeColor));    
     Array.from(document.body.querySelector("div#wrapper").childNodes)
     .forEach((g) => g.removeEventListener("mouseover", darkenColor));
-}
-
-function randomColorOnMouseover() {
-    removeMouseoverEvents();
-    rc = generateRandomColor();
-    Array.from(document.body.querySelector("div#wrapper").childNodes)
-    .forEach((g) => g.addEventListener("mouseover", randomColor));
-}
-
-function randomColor(e) {    
-    changeColor(event, rc[0], rc[1], rc[2]);
 }
 
 function darkenColorOnMouseover() {
