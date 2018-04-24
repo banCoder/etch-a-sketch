@@ -1,73 +1,144 @@
-function setupCSSGrid(n = 16, size = 1000) {
-    // outer div
+function setupGrid(n = 16, size = 600) {    
+    // grid div
     let div = document.body.querySelector("div#wrapper");
     if (!div) {
+        // outter div
+        outDiv = document.createElement("div");
+        outDiv.id = "etch";
+        document.body.appendChild(outDiv);
+        h1 = document.createElement("h1");
+        h1.innerText = "Etch-a-Sketch";
+        h1.classList.add("text-center");
+        outDiv.appendChild(h1);
         div = document.createElement("div");
         div.id = "wrapper";
-        div.style.display = "grid";        
-        div.style.border = "1px solid black";
-        document.body.appendChild(div);
+        div.style.display = "grid";
+        outDiv.appendChild(div);              
     }
-    div.style.width = size + "px";
-    div.style.height = size + "px";
+    // setup 16 : 9 grid
+    div.style.width = Math.floor(size * 16 / 9) + "px";
+    div.style.height = size + "px";    
     div.style.gridAutoRows = size / n + "px";
-    div.style.gridAutoColumns = size / n + "px";
-
+    div.style.gridAutoColumns = div.style.width / (n * 16 / 9);
+    // fill the grid
     for (let i = 1; i <= n; i++) {
-        for (let j = 1; j <= n; j++) {
-            // fill the line
+        for (let j = 1; j <= (n * 16 / 9); j++) {
             let g = document.createElement("div");
             g.style.gridColumn = j;
             g.style.gridRow = i;
-            g.style.border = "1px solid black";
             div.appendChild(g);
         }
     }    
 }
 
-function changeColor(e, r, g, b, a) {
-    e.target.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${a})`;
+function generateRandomColor() {
+    let r = Math.floor(Math.random() * 255);
+    let g = Math.floor(Math.random() * 255);
+    let b = Math.floor(Math.random() * 255);
+    return [r, g, b];
 }
 
-function hover() {
+function changeColor(event, red, green, blue) {
+    if (red == undefined) event.target.style.backgroundColor = `rgb(${rc[0]}, ${rc[1]}, ${rc[2]})`;
+    else event.target.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+}
+
+function colorOnMouseover() {
+    removeMouseoverEvents();
+    rc = generateRandomColor();
     Array.from(document.body.querySelector("div#wrapper").childNodes)
-    .forEach((g) => g.addEventListener("mouseover", (e) => {
-        changeColor(e, 100, 0, 0, 1);
-    }));
+    .forEach((g) => g.addEventListener("mouseover", changeColor));
 }
 
-function reset() {
+function removeMouseoverEvents() {
+    // remove current mouseover
+    Array.from(document.body.querySelector("div#wrapper").childNodes)
+    .forEach((g) => g.removeEventListener("mouseover", changeColor));
+    Array.from(document.body.querySelector("div#wrapper").childNodes)
+    .forEach((g) => g.removeEventListener("mouseover", randomColor));
+    Array.from(document.body.querySelector("div#wrapper").childNodes)
+    .forEach((g) => g.removeEventListener("mouseover", darkenColor));
+}
+
+function randomColorOnMouseover() {
+    removeMouseoverEvents();
+    rc = generateRandomColor();
+    Array.from(document.body.querySelector("div#wrapper").childNodes)
+    .forEach((g) => g.addEventListener("mouseover", randomColor));
+}
+
+function randomColor(e) {    
+    changeColor(event, rc[0], rc[1], rc[2]);
+}
+
+function darkenColorOnMouseover() {
+    removeMouseoverEvents();
+    // darken current square
+    Array.from(document.body.querySelector("div#wrapper").childNodes)
+    .forEach((g) => g.addEventListener("mouseover", darkenColor));
+}
+
+function darkenColor(e) {
+    let rgb;
+    if (e.target.style.backgroundColor == "") rgb = [255, 255, 255];
+    else rgb = e.target.style.backgroundColor.slice(4, -1).split(", ");
+    changeColor(e, Math.max(0, rgb[0] - 25), Math.max(0, rgb[1] - 25), Math.max(0, rgb[2] - 25));
+}
+
+function resetGrid() {
     let grid = document.body.querySelector("div#wrapper");
     while (grid.firstChild) grid.removeChild(grid.firstChild);
 }
 
+// setup grid
+let outDiv;
+setupGrid();
+
+// hold random color
+let rc;
+
+// setup hover event
+colorOnMouseover();
+
+// buttons div
+let buttonsDiv = document.createElement("div");
+buttonsDiv.id = "buttons"
+outDiv.appendChild(buttonsDiv);
+
 // reset button
 let resetButton = document.createElement("button");
 resetButton.innerText = "RESET";
-document.body.appendChild(resetButton);
+buttonsDiv.appendChild(resetButton);
 resetButton.addEventListener("click", (e) => {
-    reset();
-    setupCSSGrid();
-    hover();
+    resetGrid();
+    setupGrid();
+    colorOnMouseover();
 });
 
 // new grid button
 let newButton = document.createElement("button");
 newButton.innerHTML = "NEW GRID";
-document.body.appendChild(newButton);
+buttonsDiv.appendChild(newButton);
 newButton.addEventListener("click", (e) => {
-    reset();
-    let size = Number(prompt("Enter the size of new grid: ", "16"));
-    if (size && typeof size == "number") setupCSSGrid(size, 1000);
-    else setupCSSGrid();
-    hover();
+    resetGrid();
+    let n = Number(prompt("Enter the size of new grid: ", "16"));
+    if (n && typeof n == "number") setupGrid(n, 600);
+    else setupGrid();
+    colorOnMouseover();
 });
 
-// random color
+// random color button
+let randomButton = document.createElement("button");
+randomButton.innerText = "NEW COLOR";
+buttonsDiv.appendChild(randomButton);
+randomButton.addEventListener("click", colorOnMouseover);
 
+// darken color button
+let darkenButton = document.createElement("button");
+darkenButton.innerText = "DARKEN COLOR";
+buttonsDiv.appendChild(darkenButton);
+darkenButton.addEventListener("click", darkenColorOnMouseover);
 
-// setup grid
-setupCSSGrid(16, 1000);
-
-// setup hover event
-hover();
+Array.from(document.body.querySelectorAll("button")).forEach((btn) => {
+    btn.classList.add("btn-circle");
+})
